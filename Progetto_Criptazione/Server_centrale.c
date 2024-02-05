@@ -290,7 +290,6 @@ int main() {
 
     return 0;
 }
-
 void reverse_string(char* str) {
     int length = strlen(str);
     int start = 0;
