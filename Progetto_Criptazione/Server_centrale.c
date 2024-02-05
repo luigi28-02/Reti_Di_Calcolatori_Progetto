@@ -11,9 +11,9 @@ int main() {
     //Dati
     struct timeval timeout;
     socklen_t lens;
-    int server_socket, client_sockets[MAX_CLIENTS],secondary1Socket,secondary2Socket;
-    struct sockaddr_in server_addr,secondaryServer,secondary2Addr,client_addr;
-    socklen_t client_len,addrSize;
+    int server_socket, client_sockets[MAX_CLIENTS],secondary1Socket,secondary2Socket,secondary3Socket;
+    struct sockaddr_in server_addr,secondaryServer,secondary2Addr,secondary3Addr,client_addr;
+    socklen_t client_len,addrSize,addrSizetre;
     fd_set read_fds, active_fds;
     int h=0;
     timeout.tv_sec = 15; // Imposta il timeout a 5 secondi
@@ -56,8 +56,8 @@ int main() {
     secondary2Socket = accept(server_socket, (struct sockaddr*)&secondary2Addr, &addrSize);
     printf("Connessione accettata da Server Secondario 2\n");
     
-    //secondary3Socket = accept(mainSocket, (struct sockaddr*)&secondary3Addr, &addrSize);
-    //printf("Connessione accettata da Server Secondario 3\n");
+    secondary3Socket = accept(server_socket, (struct sockaddr*)&secondary3Addr, &addrSizetre);
+    printf("Connessione accettata da Server Secondario 3\n");
 
 
 
@@ -198,6 +198,8 @@ int main() {
                 
                 
                 */
+
+               //Ciao mondo
                char term[5]="exit";
                riceviDati(client_socket,buffer,MAXLINE,term,clientData[i].collezionedati);
                printf("Buffer ricevuto all'iterazione %d  . Contenuto %s \n",h,clientData[i].collezionedati[h].buffer);
@@ -240,9 +242,15 @@ int main() {
                    
                 }else if(strcmp(words[s], "2") == 0)
                 {
-                    handleRequest(client_socket,clientData[i].collezionedati[q].buffer,0);
-                    printf("Server 2 %d",s);
-                    fflush(stdout);
+                     printf("Buffer ricevuto all'iterazione %d  . Contenuto %s \n",h,clientData[i].collezionedati[q].buffer);
+
+                    
+                    printf("\nSono il processo figlio del caso %s",word[s]);
+                    send(secondary3Socket, clientData[i].collezionedati[q].buffer, sizeof(buffer), 0);
+                    //sleep(10);
+                    recv(secondary3Socket, clientData[i].collezionedati[q].buffer,sizeof(buffer), 0);
+                    printf("Ricevo: %s \n",clientData[i].collezionedati[q].buffer);
+                    printf("\nMessaggio ricevuto dal server destinatario:\n\"%s\"\n", clientData[i].collezionedati[q].buffer);
 
                 }else if(strcmp(words[s], "3") == 0)
                 {

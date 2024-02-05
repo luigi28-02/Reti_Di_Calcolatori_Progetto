@@ -3,15 +3,15 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <ctype.h>
 #include <pthread.h>
-#define MAX_LENGTH 256
 
 #define PORT 1024
 #define BUFFER_SIZE 256
-char risultato[BUFFER_SIZE*5];
+#define MAX_LENGTH 256
 
-void reverseString(char* str) {
+char risultato[MAX_LENGTH*9];
+void * reverseString(void *arg) {
+     char *str = (char *)arg;
     int start = 0;
     int end = strlen(str) - 1;
     while (start < end) {
@@ -22,49 +22,45 @@ void reverseString(char* str) {
         end--;
     }
 }
-
-void *rendiMaiuscoli(void *arg) {
-    char *buffer=(char *)arg;
-    for (int i = 0; buffer[i]; i++) {
-        buffer[i] = toupper(buffer[i]);
-    }
-}
-
 void Thread(char *buffer) {
     pthread_t thread;
     
     // Creazione del thread per invertire la stringa
-    pthread_create(&thread, NULL, rendiMaiuscoli,(void *)buffer);
+    pthread_create(&thread, NULL, reverseString,(void *)buffer);
     pthread_join(thread, NULL);
 }
 
 
 
-
-void convertiInASCII(const char *testo, char result[]) {
+void convertiInBinary(const char *testo, char result[]) {
     int i = 0;
     while (*testo) {
-        i += sprintf(result + i, "%d ", *testo);
+        for (int j = 7; j >= 0; j--) {
+            char bit = ((*testo >> j) & 1) + '0';
+            sprintf(result + i, "%c", bit);
+            i++;
+        }
+
+        sprintf(result + i, " ");  // Aggiungi uno spazio tra i caratteri binari
+        i++;
         testo++;
     }
     result[i] = '\0';  // Aggiungi un terminatore di stringa
 }
-
 void *threadFunction(void *arg) {
     char *input = (char *)arg;
-    convertiInASCII(input, risultato);
 
-    printf("Rappresentazione ASCII: %s\n", risultato);
+    convertiInBinary(input, risultato);
+
+    printf("Rappresentazione Binaria: %s\n", risultato);
 
     pthread_exit(NULL);
 }
-
 int main() {
-     pthread_t thread;
+    pthread_t thread;
     int secondarySocket;
     struct sockaddr_in serverAddr;
     char buffer[BUFFER_SIZE];
-    char input[BUFFER_SIZE];
 
     // Creazione del socket secondario
     secondarySocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -88,12 +84,11 @@ int main() {
     // Ciclo di comunicazione con il server principale
     while (1) {
         // Ricezione del messaggio dal server principale
-        recv(secondarySocket,input,sizeof(input), 0);
-
-        printf("\nMessaggio ricevuto dal server principale:\n\"%s\"\n", input);
+        recv(secondarySocket, buffer,sizeof(buffer), 0);
+        printf("\nMessaggio ricevuto dal server principale:\n\"%s\"\n", buffer);
 
         // Inversione del messaggio
-         if (pthread_create(&thread, NULL, threadFunction, (void *)input) != 0) {
+        if (pthread_create(&thread, NULL, threadFunction, (void *)buffer) != 0) {
         fprintf(stderr, "Errore nella creazione del thread.\n");
         return 1;
     }
@@ -106,8 +101,7 @@ int main() {
         send(secondarySocket,risultato, strlen(risultato), 0);
 
         // Pulizia del buffer
-        memset(risultato, 0, BUFFER_SIZE);
-        memset(input, 0, BUFFER_SIZE);
+        memset(buffer, 0, BUFFER_SIZE);
     }
 
     // Chiusura del socket secondario
