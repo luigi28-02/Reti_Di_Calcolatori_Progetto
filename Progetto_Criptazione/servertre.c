@@ -1,10 +1,9 @@
+/*
+    In questo file c'è il server che si occupa di invertire il contenuto dei file che gli vengono inviati dal server centrale
+*/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <pthread.h>
+
+#include "Funzioni.h"
 
 #define PORT 1024
 #define BUFFER_SIZE 256
@@ -32,7 +31,7 @@ void Thread(char *buffer) {
 int main() {
     int secondarySocket;
     struct sockaddr_in serverAddr;
-    char buffer[BUFFER_SIZE];
+    char buffer[MAXLINE];
 
     // Creazione del socket secondario
     secondarySocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -69,7 +68,7 @@ int main() {
         send(secondarySocket, buffer, strlen(buffer), 0);
 
         // Pulizia del buffer
-        memset(buffer, 0, BUFFER_SIZE);
+        memset(buffer, 0,MAXLINE);
     }
 
     // Chiusura del socket secondario

@@ -1,8 +1,7 @@
 
 #include "Funzioni.h"
 
-void reverse_string(char* str);
-void handleRequest(int secondarySocket, char buffer[],int choice );
+void handleRequest(int secondarySocket,ClientData *clientData,int s,int q,int i);
 
 
 int numero_file=0;
@@ -218,6 +217,9 @@ int main() {
                 {
                     
                 if (strcmp(words[s], "0")==0) {
+
+                    handleRequest(secondary1Socket,clientData,s,q,i);
+                    /*
                     printf("Buffer ricevuto all'iterazione %d  . Contenuto %s \n",h,clientData[i].collezionedati[q].buffer);
 
                     
@@ -227,9 +229,11 @@ int main() {
                     recv(secondary1Socket, clientData[i].collezionedati[q].buffer,sizeof(buffer), 0);
                     printf("Ricevo: %s \n",clientData[i].collezionedati[q].buffer);
                     printf("\nMessaggio ricevuto dal server destinatario:\n\"%s\"\n", clientData[i].collezionedati[q].buffer);
-                   
+                   */
                 }else if(strcmp(words[s], "1") == 0)
                 {
+                    handleRequest(secondary2Socket,clientData,s,q,i);
+                    /*
                     printf("Buffer ricevuto all'iterazione %d  . Contenuto %s \n",h,clientData[i].collezionedati[q].buffer);
 
                     
@@ -239,9 +243,14 @@ int main() {
                     recv(secondary2Socket, clientData[i].collezionedati[q].buffer,sizeof(buffer), 0);
                     printf("Ricevo: %s \n",clientData[i].collezionedati[q].buffer);
                     printf("\nMessaggio ricevuto dal server destinatario:\n\"%s\"\n", clientData[i].collezionedati[q].buffer);
+                    
+                    */
+                    
                    
                 }else if(strcmp(words[s], "2") == 0)
                 {
+                    handleRequest(secondary3Socket,clientData,s,q,i);
+                    /*
                      printf("Buffer ricevuto all'iterazione %d  . Contenuto %s \n",h,clientData[i].collezionedati[q].buffer);
 
                     
@@ -251,11 +260,7 @@ int main() {
                     recv(secondary3Socket, clientData[i].collezionedati[q].buffer,sizeof(buffer), 0);
                     printf("Ricevo: %s \n",clientData[i].collezionedati[q].buffer);
                     printf("\nMessaggio ricevuto dal server destinatario:\n\"%s\"\n", clientData[i].collezionedati[q].buffer);
-
-                }else if(strcmp(words[s], "3") == 0)
-                {
-                    printf("Server 3 %d",s);
-                    fflush(stdout);
+                    */
                 }
                 q++;
                 s=s+2;
@@ -298,31 +303,19 @@ int main() {
 
     return 0;
 }
-void reverse_string(char* str) {
-    int length = strlen(str);
-    int start = 0;
-    int end = length - 1;
-
-    while (start < end) {
-        char temp = str[start];
-        str[start] = str[end];
-        str[end] = temp;
-
-        start++;
-        end--;
-    }
-}
 
 
-void handleRequest(int secondarySocket, char buffer[],int choice ){
+    /*
+    Questa funzione permette di inviare dati ad un qualsiasi server.
+    Prende come parametri la socket collegata al server in questione, Una struttura dati ClientData da cui prendersi il Client corrente e il buffer corrente e i relativi indici.
 
-    
-         printf("\nSono il processo figlio del caso %d", choice);
-         send(secondarySocket, buffer, strlen(buffer), 0);
-         recv(secondarySocket, buffer,strlen(buffer), 0);
-         printf("Ricevo: %s \n",buffer);
-         printf("\nMessaggio ricevuto dal server destinatario:\n\"%s\"\n", buffer);
-         exit(EXIT_SUCCESS);
+    */
+void handleRequest(int secondarySocket,ClientData *clientData,int s,int q,int i){
+    printf("Buffer ricevuto all'iterazione %d  . Contenuto %s \n",q,clientData[i].collezionedati[q].buffer);                
+    send(secondarySocket, clientData[i].collezionedati[q].buffer, sizeof(clientData[i].collezionedati[q].buffer), 0);
+    //sleep(10);
+    recv(secondarySocket, clientData[i].collezionedati[q].buffer,sizeof(clientData[i].collezionedati[q].buffer), 0);
+    printf("Ricevo: %s \n",clientData[i].collezionedati[q].buffer);
     
 
 }

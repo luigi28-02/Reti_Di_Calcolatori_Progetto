@@ -1,37 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <pthread.h>
+/*
+    In questo file c'è il server che si occupa della criptazione del contenuto dei file che gli vengono inviati dal server centrale in binario
+*/
+
+
+
+//Librerie Utili
+#include "Funzioni.h"
 
 #define PORT 1024
 #define BUFFER_SIZE 256
 #define MAX_LENGTH 256
 
-char risultato[MAX_LENGTH*9];
-void * reverseString(void *arg) {
-     char *str = (char *)arg;
-    int start = 0;
-    int end = strlen(str) - 1;
-    while (start < end) {
-        char temp = str[start];
-        str[start] = str[end];
-        str[end] = temp;
-        start++;
-        end--;
-    }
-}
-void Thread(char *buffer) {
-    pthread_t thread;
-    
-    // Creazione del thread per invertire la stringa
-    pthread_create(&thread, NULL, reverseString,(void *)buffer);
-    pthread_join(thread, NULL);
-}
+char risultato[MAXLINE*9];
 
 
 
+//Funzione che convere un file di testo in binario
 void convertiInBinary(const char *testo, char result[]) {
     int i = 0;
     while (*testo) {
@@ -47,6 +31,8 @@ void convertiInBinary(const char *testo, char result[]) {
     }
     result[i] = '\0';  // Aggiungi un terminatore di stringa
 }
+
+//Sfruttiamo i thread
 void *threadFunction(void *arg) {
     char *input = (char *)arg;
 
@@ -56,11 +42,13 @@ void *threadFunction(void *arg) {
 
     pthread_exit(NULL);
 }
+
+
 int main() {
     pthread_t thread;
     int secondarySocket;
     struct sockaddr_in serverAddr;
-    char buffer[BUFFER_SIZE];
+    char buffer[MAXLINE];
 
     // Creazione del socket secondario
     secondarySocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -101,7 +89,8 @@ int main() {
         send(secondarySocket,risultato, strlen(risultato), 0);
 
         // Pulizia del buffer
-        memset(buffer, 0, BUFFER_SIZE);
+        memset(buffer, 0,MAXLINE);
+        memset(risultato, 0,MAXLINE);
     }
 
     // Chiusura del socket secondario

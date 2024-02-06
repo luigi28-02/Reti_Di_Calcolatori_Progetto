@@ -1,46 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <ctype.h>
-#include <pthread.h>
+/*
+    In questo file c'è il server che si occupa della criptazione del contenuto dei file che gli vengono inviati dal server centrale in ASCII
+*/
+
+
+#include "Funzioni.h"
 #define MAX_LENGTH 256
 
 #define PORT 1024
 #define BUFFER_SIZE 256
-char risultato[BUFFER_SIZE*5];
-
-void reverseString(char* str) {
-    int start = 0;
-    int end = strlen(str) - 1;
-    while (start < end) {
-        char temp = str[start];
-        str[start] = str[end];
-        str[end] = temp;
-        start++;
-        end--;
-    }
-}
-
-void *rendiMaiuscoli(void *arg) {
-    char *buffer=(char *)arg;
-    for (int i = 0; buffer[i]; i++) {
-        buffer[i] = toupper(buffer[i]);
-    }
-}
-
-void Thread(char *buffer) {
-    pthread_t thread;
-    
-    // Creazione del thread per invertire la stringa
-    pthread_create(&thread, NULL, rendiMaiuscoli,(void *)buffer);
-    pthread_join(thread, NULL);
-}
+char risultato[MAXLINE*5];
 
 
-
-
+//Converte il testo in ASCII
 void convertiInASCII(const char *testo, char result[]) {
     int i = 0;
     while (*testo) {
@@ -59,12 +30,13 @@ void *threadFunction(void *arg) {
     pthread_exit(NULL);
 }
 
-int main() {
+int main() 
+{
      pthread_t thread;
     int secondarySocket;
     struct sockaddr_in serverAddr;
-    char buffer[BUFFER_SIZE];
-    char input[BUFFER_SIZE];
+    char buffer[MAXLINE];
+    char input[MAXLINE];
 
     // Creazione del socket secondario
     secondarySocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -86,28 +58,30 @@ int main() {
     }
     
     // Ciclo di comunicazione con il server principale
-    while (1) {
+    while (1) 
+    {
         // Ricezione del messaggio dal server principale
         recv(secondarySocket,input,sizeof(input), 0);
 
         printf("\nMessaggio ricevuto dal server principale:\n\"%s\"\n", input);
 
         // Inversione del messaggio
-         if (pthread_create(&thread, NULL, threadFunction, (void *)input) != 0) {
-        fprintf(stderr, "Errore nella creazione del thread.\n");
-        return 1;
-    }
-    pthread_join(thread, NULL);
+        if (pthread_create(&thread, NULL, threadFunction, (void *)input) != 0) 
+        {
+            fprintf(stderr, "Errore nella creazione del thread.\n");
+            return 1;
+        }
+        pthread_join(thread, NULL);
         
-    //si mostra la stringa modificata
-    printf("\nMessaggio modificato:\n\"%s\"\n",risultato);
+        //si mostra la stringa modificata
+        printf("\nMessaggio modificato:\n\"%s\"\n",risultato);
     
         // Invio del messaggio invertito al server principale
         send(secondarySocket,risultato, strlen(risultato), 0);
 
         // Pulizia del buffer
-        memset(risultato, 0, BUFFER_SIZE);
-        memset(input, 0, BUFFER_SIZE);
+        memset(risultato, 0, MAXLINE);
+        memset(input, 0,MAXLINE);
     }
 
     // Chiusura del socket secondario
